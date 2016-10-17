@@ -20,11 +20,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.title = @"请点击屏幕";
     self.view.backgroundColor = [UIColor whiteColor];
-    
-    _xucgLikes = [[XucgLikes alloc] init];
-    _xucgLikes.frame = self.view.bounds;
-    [self.view addSubview:_xucgLikes];
     
     // tap手势
     UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGestureHandler:)];
@@ -40,7 +37,9 @@
 }
 
 -(void) tapGestureHandler:(UITapGestureRecognizer*)tap{
-    [_xucgLikes popOneLike];
+    XucgLikes *flyHeart = [[XucgLikes alloc] init];
+    CGPoint likeOrigin = CGPointMake(xucgScreenWidth/2, xucgScreenHeight - 42);
+    [flyHeart showInView:self.view atPosition:likeOrigin];
 }
 
 @end

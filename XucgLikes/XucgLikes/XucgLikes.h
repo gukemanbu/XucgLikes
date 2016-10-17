@@ -8,8 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
-@interface XucgLikes : UIView
+#define xucgScreenWidth  [UIScreen mainScreen].bounds.size.width   // 当前屏幕宽
+#define xucgScreenHeight [UIScreen mainScreen].bounds.size.height  // 当前屏幕高
 
--(void) popOneLike;
+@interface XucgLikes : UIImageView
+
+-(void)showInView:(UIView *)view atPosition:(CGPoint)position;
 
 @end

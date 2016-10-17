@@ -8,97 +8,89 @@
 
 #import "XucgLikes.h"
 
-@interface XucgLikes ()
-
-@property (nonatomic, assign) CGFloat width;
-@property (nonatomic, assign) CGFloat height;
-@property (nonatomic, strong) NSMutableArray *heartArray;
-
-@end
-
 @implementation XucgLikes
 
 -(instancetype) init {
     self = [super init];
     if (self) {
-        _heartArray = [NSMutableArray array];
+        self.contentMode = UIViewContentModeScaleAspectFit;
+        self.frame = CGRectMake(0, 0, 33, 66);
+        
+        NSString *imageName = [NSString stringWithFormat:@"lm-girl-heart%u", arc4random() % 7];
+        self.image = [UIImage imageNamed:imageName];
     }
     
     return self;
 }
 
--(void) setFrame:(CGRect)frame {
-    [super setFrame:frame];
+-(void)showInView:(UIView *)view atPosition:(CGPoint)position{
     
-    _width = frame.size.width;
-    _height = frame.size.height;
-}
-
--(void) popOneLike {
-    NSString *imageName = [NSString stringWithFormat:@"lm-girl-heart%u", arc4random() % 7];
-    UIImage *heartImage = [UIImage imageNamed:imageName];
-    UIImageView* heartView = [[UIImageView alloc] initWithImage:heartImage];
-    [_heartArray addObject:heartView];
-    
-    // 大小 可以变化 scale = 1.0 / (arc4random() % 10) + 0.7;
-    double scale = 1.0;
-    
-    CGFloat newHeartWidth = heartImage.size.width * scale;
-    CGFloat newHeartHeight = heartImage.size.height * scale;
-    
-    // 心的起始位置
-    int startX = _width / 2;
-    int startY = _height - newHeartHeight;
-    
-    heartView.frame = CGRectMake(startX, startY, newHeartWidth, newHeartHeight);
-    [self addSubview:heartView];
+    CGRect frame = self.frame;
+    frame.origin = position;
+    self.frame = frame;
+    [view addSubview:self];
     
     // 出现动画
-    CABasicAnimation *theAnimation;
-    theAnimation=[CABasicAnimation animationWithKeyPath:@"transform.scale"];
-    theAnimation.duration = 0.1;
-    theAnimation.removedOnCompletion = YES;
-    theAnimation.fromValue = [NSNumber numberWithFloat:0.0];
-    theAnimation.toValue = [NSNumber numberWithFloat:1.0];
-    [heartView.layer addAnimation:theAnimation forKey:@"popup"];
+    CABasicAnimation *showAnimation;
+    showAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    showAnimation.duration = 0.6f;
+    showAnimation.autoreverses = NO;
+    showAnimation.removedOnCompletion = NO;
+    showAnimation.fromValue = [NSNumber numberWithFloat:0.0];
+    showAnimation.toValue = [NSNumber numberWithFloat:1.0];
+    [self.layer addAnimation:showAnimation forKey:@"popup"];
     
     // 飞行动画
     CAKeyframeAnimation *flyAnimation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
-    flyAnimation.delegate = self;
+    flyAnimation.delegate = (id<CAAnimationDelegate>)self;
     flyAnimation.beginTime = 0.f;
-    flyAnimation.duration = 3.f;
+    flyAnimation.duration = xucgScreenWidth > xucgScreenHeight ? 3.f : 6.f;
     flyAnimation.removedOnCompletion = NO;
     flyAnimation.fillMode = kCAFillModeForwards;
     flyAnimation.repeatCount = 0;
     flyAnimation.calculationMode = kCAAnimationCubicPaced;
     
     CGMutablePathRef curvedPath = CGPathCreateMutable();
-    CGPathMoveToPoint(curvedPath, NULL, startX, startY);
+    CGPathMoveToPoint(curvedPath, NULL, position.x, position.y);
     
-    int tmpX = arc4random() % (int)(_width + _width / 2);
-    CGFloat ctrlX = tmpX % 2 == 0 ? _width / 2 + tmpX : _width / 2 - tmpX;
-    CGFloat ctrlY = _height / 4 + arc4random() % (int)(_height / 2);
-    int endX = arc4random() % (int)_width;
-    CGPathAddQuadCurveToPoint(curvedPath, NULL, ctrlX, ctrlY, endX, 0);
+    int right = arc4random_uniform(2);
+    int down = arc4random_uniform(2);
+    int tmpX = arc4random_uniform(100);
+    int tmpY = arc4random_uniform(20);
+    
+    CGFloat ctrlX = position.x + (right? tmpX : -tmpX);
+    CGFloat ctrlY = position.y*0.5 + (down? tmpY : -tmpY);
+    
+    CGPathAddQuadCurveToPoint(curvedPath, NULL, ctrlX, ctrlY, position.x, 0);
     flyAnimation.path = curvedPath;
     CGPathRelease(curvedPath);
-    [heartView.layer addAnimation:flyAnimation forKey:@"fly"];
+    [self.layer addAnimation:flyAnimation forKey:@"fly"];
     
-    // 消逝动画
+    // 渐变动画
     CABasicAnimation *fadeInAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
     fadeInAnimation.fromValue = [NSNumber numberWithFloat:1.0];
     fadeInAnimation.toValue = [NSNumber numberWithFloat:0.0];
     fadeInAnimation.additive = NO;
     fadeInAnimation.removedOnCompletion = NO;
     fadeInAnimation.beginTime = 0.f;
-    fadeInAnimation.duration = 3.;
+    fadeInAnimation.duration = 3.f;
     fadeInAnimation.fillMode = kCAFillModeForwards;
-    [heartView.layer addAnimation:fadeInAnimation forKey:@"dismiss"];
+    [self.layer addAnimation:fadeInAnimation forKey:@"fade"];
+    
+    // 缩小动画
+    CABasicAnimation *disAnimation;
+    disAnimation = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    disAnimation.beginTime = CACurrentMediaTime() + 2.5f;
+    disAnimation.duration = 0.5f;
+    disAnimation.autoreverses = NO;
+    disAnimation.removedOnCompletion = NO;
+    disAnimation.fromValue = [NSNumber numberWithFloat:1.0];
+    disAnimation.toValue = [NSNumber numberWithFloat:0.f];
+    [self.layer addAnimation:disAnimation forKey:@"dismiss"];
 }
 
 -(void) animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
-    [_heartArray[0] removeFromSuperview];
-    [_heartArray removeObjectAtIndex:0];
+    [self removeFromSuperview];
 }
 
 @end
