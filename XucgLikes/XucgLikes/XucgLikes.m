@@ -10,7 +10,7 @@
 
 @implementation XucgLikes
 
--(instancetype) init {
+- (instancetype)init {
     self = [super init];
     if (self) {
         self.contentMode = UIViewContentModeScaleAspectFit;
@@ -23,7 +23,7 @@
     return self;
 }
 
--(void)showInView:(UIView *)view atPosition:(CGPoint)position{
+- (void)showInView:(UIView *)view atPosition:(CGPoint)position{
     
     CGRect frame = self.frame;
     frame.origin = position;
@@ -89,7 +89,7 @@
     [self.layer addAnimation:disAnimation forKey:@"dismiss"];
 }
 
--(void) animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
     [self removeFromSuperview];
 }
 
